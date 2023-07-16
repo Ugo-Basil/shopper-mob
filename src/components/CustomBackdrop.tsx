@@ -1,14 +1,45 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from "react";
+import { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
+import Animated, {
+    Extrapolate,
+    interpolate,
+    useAnimatedProps,
+    useAnimatedStyle,
+} from "react-native-reanimated";
+import { BlurView } from "expo-blur";
 
-const CustomBackdrop = () => {
-  return (
-    <View>
-      <Text>CustomBackdrop</Text>
-    </View>
-  )
-}
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
-export default CustomBackdrop
+const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {
+    const containerAnimatedStyle = useAnimatedStyle(() => ({
+        backgroundColor: `rgba(0,0,0,${interpolate(
+            animatedIndex.value,
+            [-1, 0],
+            [0, 0.5],
+            Extrapolate.CLAMP
+        )})`,
+    }));
 
-const styles = StyleSheet.create({})
+    // styles
+    const containerStyle = useMemo(
+        () => [style, containerAnimatedStyle],
+        [style]
+    );
+
+    const blurViewProps = useAnimatedProps(() => {
+        return {
+            intensity: interpolate(
+                animatedIndex.value,
+                [-1, 0],
+                [0, 20],
+                Extrapolate.CLAMP
+            ),
+        };
+    });
+
+    return (
+        <AnimatedBlurView animatedProps={blurViewProps} style={containerStyle} />
+    );
+};
+
+export default CustomBackdrop;
